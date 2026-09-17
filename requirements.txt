@@ -1,0 +1,28 @@
+﻿# Dependências Principais
+torch>=2.1.0
+torchvision>=0.16.0
+torchaudio>=2.1.0
+
+# Interface Web
+gradio>=4.30.0
+
+# Síntese de Voz (TTS)
+edge-tts>=6.1.12
+pydub>=0.25.1
+
+# Processamento de Imagem e Vídeo
+opencv-python>=4.9.0.80
+imageio>=2.34.0
+imageio-ffmpeg>=0.4.9
+pillow>=10.2.0
+scipy>=1.12.0
+librosa>=0.10.1
+tqdm>=4.66.0
+numpy>=1.24.0
+
+# Dependências de IA / Visão Computacional
+facexlib>=0.3.0
+insightface>=0.7.3
+basicsr>=1.4.2
+gdown>=5.1.0
+huggingface_hub>=0.22.0
