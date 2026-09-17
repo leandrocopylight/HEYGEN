@@ -1,80 +1,99 @@
-﻿# 🎬 AI Avatar Studio (HeyGen Open-Source)
+﻿# Avatar Studio - Sincronizacao Labial com GPU NVIDIA T4
 
-> Ferramenta completa, moderna e 100% gratuita para criação de **Avatares Falantes Ultra-Realistas com Sincronia Labial e Restauração Facial em Alta Definição**, projetada para rodar com aceleração por GPU NVIDIA (Google Colab ou local).
-
----
-
-## 🌟 Recursos Principais
-
-- **Voz Natural em Português Brasileiro (e outros idiomas):** Integração com modelos neurais via Edge-TTS (vozes masculinas, femininas e jovens) ou áudio personalizado.
-- **Sincronia Labial de Alta Fidelidade (Lip-Sync):** Movimentação precisa dos lábios de acordo com os fonemas do áudio.
-- **Restauração e Nitidez Facial (CodeFormer / GFPGAN):** Elimina distorções e borrões comuns em IAs, mantendo dentes, olhos e pele nítidos e naturais.
-- **Interface Gráfica Amigável (Gradio WebUI):** Link público para usar pelo navegador sem tocar em linhas de código.
-- **Custo Zero:** Executável na GPU NVIDIA T4 gratuita do Google Colab sem necessidade de cartão de crédito ou assinaturas.
+Interface local bonita + processamento na GPU T4 gratuita do Google Colab.
 
 ---
 
-## 📐 Arquitetura do Pipeline
+## Como usar (passo a passo completo)
 
-```mermaid
-flowchart LR
-    A[Texto ou Áudio] --> B[Síntese Neural TTS]
-    C[Foto ou Vídeo Base] --> D[Motor de Lip-Sync]
-    B --> D
-    D --> E[CodeFormer Restauração Facial]
-    E --> F[Vídeo Final MP4 HD]
+### Parte 1: Iniciar o servidor GPU no Google Colab
+
+1. Abra o [Google Colab](https://colab.research.google.com/)
+2. Crie um novo notebook em branco
+3. Va em **Ambiente de execucao > Alterar tipo de ambiente de execucao > GPU T4**
+4. Crie a **Celula 1** e cole:
+
+```python
+# Instalacao (rode apenas 1 vez por sessao)
+!nvidia-smi
+!apt-get update -y -q && apt-get install -y -q ffmpeg
+!pip install -q fastapi uvicorn python-multipart pyngrok
+
+import os
+if not os.path.exists("Wav2Lip"):
+    !git clone -q https://github.com/Rudrabha/Wav2Lip.git
+!pip install -q -r Wav2Lip/requirements.txt
+!mkdir -p checkpoints Wav2Lip/checkpoints
+if not os.path.exists("checkpoints/wav2lip_gan.pth"):
+    !wget -q -O checkpoints/wav2lip_gan.pth https://huggingface.co/Akumzy/Wav2Lip-GAN/resolve/main/wav2lip_gan.pth
+    !cp checkpoints/wav2lip_gan.pth Wav2Lip/checkpoints/
+if not os.path.exists("Wav2Lip/face_detection/detection/sfd/s3fd.pth"):
+    !wget -q -O Wav2Lip/face_detection/detection/sfd/s3fd.pth https://huggingface.co/Akumzy/Wav2Lip-GAN/resolve/main/s3fd-619a316848.pth
+print("Instalacao concluida!")
 ```
 
----
+5. Crie a **Celula 2** e cole o conteudo do arquivo `colab_server.py` (a parte dentro das aspas triplas da CELULA 2)
 
-## 🚀 Como Usar no Google Colab (Passo a Passo)
+6. Execute a Celula 2. Uma URL sera gerada assim:
+   ```
+   SERVIDOR ONLINE!
+   URL PUBLICA: https://xxxx.ngrok-free.app
+   ```
 
-1. Abra o [Google Colab](https://colab.research.google.com/).
-2. Faça o upload ou abra o arquivo `avatar_generator_colab.ipynb`.
-3. No menu superior, clique em **Ambiente de execução** > **Alterar tipo de ambiente de execução** e escolha **GPU T4**.
-4. Execute a **Etapa 1** (Instalação das dependências e modelos).
-5. Execute a **Etapa 2** (Iniciar a WebUI).
-6. Clique no link gerado `Running on public URL: https://xxxx.gradio.live` para abrir a interface no seu navegador.
-
----
-
-## 💻 Estrutura do Repositório
-
-```text
-├── avatar_generator_colab.ipynb   # Notebook completo para execução em 1 clique no Colab
-├── app.py                         # Interface gráfica Web com Gradio
-├── requirements.txt               # Dependências do projeto
-├── pipeline/
-│   ├── tts.py                     # Síntese de voz neural em múltiplos idiomas
-│   ├── lipsync.py                 # Motor de sincronia labial
-│   └── enhancer.py                # Restauração e nitidez facial com CodeFormer
-└── README.md                      # Documentação do projeto
-```
+7. Copie essa URL.
 
 ---
 
-## 📦 Como Subir este Projeto para o seu GitHub
+### Parte 2: Rodar a interface no seu PC
 
-Para enviar este projeto para o seu repositório no GitHub, abra o terminal nesta pasta e execute:
+**Opcao A - Instalacao automatica (recomendado):**
+- Clique duas vezes no arquivo `setup.bat`
+- O navegador abrira automaticamente em `http://localhost:8501`
 
+**Opcao B - Manual:**
 ```bash
-# 1. Iniciar o repositório git local (já configurado)
-git init
-
-# 2. Adicionar os arquivos
-git add .
-git commit -m "feat: initial commit - ai avatar generator heygen open-source"
-
-# 3. Vincular ao seu repositório remoto no GitHub
-# (Substitua SEU_USUARIO e SEU_REPOSITORIO pela sua URL)
-git branch -M main
-git remote add origin https://github.com/SEU_USUARIO/SEU_REPOSITORIO.git
-
-# 4. Enviar os arquivos
-git push -u origin main
+pip install streamlit requests
+streamlit run app.py
 ```
 
 ---
 
-## 📄 Licença
-Este projeto é distribuído para fins educacionais e de pesquisa, utilizando modelos abertos sob suas respectivas licenças de código aberto (Wav2Lip, CodeFormer, Edge-TTS).
+### Parte 3: Usar o Avatar Studio
+
+1. Na barra lateral, cole a URL do Colab (ex: `https://xxxx.ngrok-free.app`)
+2. Um icone verde confirma a conexao com a GPU
+3. Faca o upload da **foto ou video** do avatar
+4. Faca o upload do **audio** (qualquer duracao - MP3, WAV, M4A...)
+5. Clique em **Gerar Video com Sincronia Labial**
+6. Acompanhe o progresso em tempo real com barra e porcentagem
+7. Quando pronto, veja o video e clique em **Baixar Video**
+
+---
+
+## Estrutura do Projeto
+
+```
+avatar-studio-local/
+├── app.py                  # Interface Streamlit local (roda no seu PC)
+├── colab_server.py         # Codigo do servidor GPU (roda no Colab)
+├── requirements_local.txt  # Dependencias locais
+├── setup.bat               # Instalador Windows (1 clique)
+└── README.md               # Este arquivo
+```
+
+---
+
+## Tempo de Processamento Estimado (GPU T4)
+
+| Duracao do Audio | Tempo Estimado |
+|:---|:---|
+| 1 minuto | ~30 segundos |
+| 5 minutos | ~2 a 3 minutos |
+| 20 minutos | ~8 a 12 minutos |
+| 30 minutos | ~12 a 20 minutos |
+
+---
+
+## Licenca
+
+Projeto educacional e de pesquisa utilizando modelos open-source.
